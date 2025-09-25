@@ -3,7 +3,7 @@ single cpp file containing all my MSMPI tests
 
 <bold> Build notes: </bold>
 *Meant to be run on visual studios with vcpkg. 
-- installer for MSMPI [https://www.microsoft.com/en-us/download/details.aspx?id=105289](url)
+- installer for [MSMPI](https://www.microsoft.com/en-us/download/details.aspx?id=105289)
 
 <p style="font-size: 20px;">
 Install MSMPI seperately and create the following environment variables: 
