@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\CARME\\source\\repos\\msMPITest\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{17D366B9-6B9C-41FF-92B9-E943C28E0B86}|msMPITest.vcxproj|C:\\Users\\CARME\\source\\repos\\msMPITest\\msMPITest.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{17D366B9-6B9C-41FF-92B9-E943C28E0B86}|msMPITest.vcxproj|solutionrelative:msMPITest.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "msMPITest.cpp",
+              "DocumentMoniker": "C:\\Users\\CARME\\source\\repos\\msMPITest\\msMPITest.cpp",
+              "RelativeDocumentMoniker": "msMPITest.cpp",
+              "ToolTip": "C:\\Users\\CARME\\source\\repos\\msMPITest\\msMPITest.cpp",
+              "RelativeToolTip": "msMPITest.cpp",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-09-18T16:10:40.77Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
