@@ -7,6 +7,7 @@ single cpp file containing all my MSMPI tests
 
 <p style="font-size: 20px;">
 Install MSMPI seperately and create the following environment variables: 
+  
 MSMPI_BIN: C:\Program Files\Microsoft MPI\Bin\
 MSMPI_INC: C:\Program Files (x86)\Microsoft SDKs\MPI\Include
 MSMPI_LIB64: C:\Program Files (x86)\Microsoft SDKs\MPI\Lib\x64
