@@ -11,12 +11,13 @@ Install MSMPI seperately and include the following environment variables:
 - MSMPI_INC: C:\Program Files (x86)\Microsoft SDKs\MPI\Include
 - MSMPI_LIB64: C:\Program Files (x86)\Microsoft SDKs\MPI\Lib\x64
 - MSMPI_BENCHMARKS: C:\Program Files\Microsoft MPI\Benchmarks\ 
-- $path: C:\vcpkg 
 
 Type the following visual studio's developer console: 
 
-- vcpkg integrate install
 - vcpkg install msmpi:x64-windows
+- vcpkg integrate install
+
+
 
 
 
