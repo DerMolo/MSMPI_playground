@@ -16,7 +16,7 @@ Configuring Visual Studios to debug via mpiexec:
 Project -> Project properties -> Debugging  
 Command: C:\Program Files\Microsoft MPI\Bin\mpiexec.exe  
 Command arguments: -n 3 "$(TargetPath)"  
-*edit the number of cores used via command argument. (I use three by default)   
+*edit the number of cores used via command argument.    
 
 Type the following visual studio's developer console:  
 - vcpkg integrate install
