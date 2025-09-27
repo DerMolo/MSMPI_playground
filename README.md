@@ -14,7 +14,7 @@ MSMPI_BENCHMARKS: C:\Program Files\Microsoft MPI\Benchmarks\
 
 Type the following visual studio's developer console: 
 
-vcpkg integrate install
+vcpkg integrate install \n
 vcpkg install msmpi:x64-windows
 
 
