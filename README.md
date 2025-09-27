@@ -13,12 +13,12 @@ Install MSMPI seperately and include the following environment variables:
 - MSMPI_BENCHMARKS: C:\Program Files\Microsoft MPI\Benchmarks\
 
 Configuring Visual Studios to debug via mpiexec: 
-Project -> Project properties -> Debugging 
-Command: C:\Program Files\Microsoft MPI\Bin\mpiexec.exe
-Command arguments: -n 3 "$(TargetPath)" 
-*edit the number of cores used via command argument. (I use three by default) 
+Project -> Project properties -> Debugging  
+Command: C:\Program Files\Microsoft MPI\Bin\mpiexec.exe  
+Command arguments: -n 3 "$(TargetPath)"  
+*edit the number of cores used via command argument. (I use three by default)   
 
-Type the following visual studio's developer console: 
+Type the following visual studio's developer console:  
 - vcpkg integrate install
 - vcpkg install
 
