@@ -17,7 +17,7 @@ Install vcpkg seperately add/edit the following environment variables [URL to vc
 - $path: C:\vcpkg  
 - VCPKG_ROOT: C:\vcpkg  
   
-Debugging the solution via mpiexec.exe: 
+Debugging the solution via mpiexec.exe:   
 Go to: Project -> Project properties -> Debugging  
 Command: C:\Program Files\Microsoft MPI\Bin\mpiexec.exe  
 Command arguments: -n 3 "$(TargetPath)"  
