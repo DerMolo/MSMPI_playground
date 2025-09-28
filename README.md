@@ -12,8 +12,8 @@ Install MSMPI seperately and include the following environment variables:
 - MSMPI_LIB64: C:\Program Files (x86)\Microsoft SDKs\MPI\Lib\x64
 - MSMPI_BENCHMARKS: C:\Program Files\Microsoft MPI\Benchmarks\
 
-Configuring Visual Studios to debug via mpiexec: 
-Project -> Project properties -> Debugging  
+Debugging the solution via mpiexec.exe: 
+Go to: Project -> Project properties -> Debugging  
 Command: C:\Program Files\Microsoft MPI\Bin\mpiexec.exe  
 Command arguments: -n 3 "$(TargetPath)"  
 *edit the number of cores used via command argument.    
@@ -21,6 +21,11 @@ Command arguments: -n 3 "$(TargetPath)"
 Type the following visual studio's developer console:  
 - vcpkg integrate install
 - vcpkg install
+
+Building with CMAKE:
+In visual studios, open the CMakeLists.txt file. 
+Visual studios will automatically build the project once in here. 
+Afterwards, simply open msMPITest.cpp. 
 
 
 
