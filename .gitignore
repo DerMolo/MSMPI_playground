@@ -1,0 +1,20 @@
+# Visual Studio user-specific files
+.vs/
+*.vcxproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+x64/
+Debug/
+Release/
+build/
+[Bb]in/
+[Oo]bj/
+
+# Other caches
+*.pdb
+*.ilk
+*.log

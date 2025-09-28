@@ -1,4 +1,5 @@
-﻿  msMPITest.cpp
-  msMPITest.vcxproj -> C:\Users\CARME\source\repos\msMPITest\x64\Debug\msMPITest.exe
+﻿  The vcpkg manifest was disabled, but we found a manifest file in C:\Users\Iampi\source\repos\MSMPI_playground\. You may want to enable vcpkg manifests in your properties page or pass /p:VcpkgEnableManifest=true to the msbuild invocation.
+  msMPITest.cpp
+  msMPITest.vcxproj -> C:\Users\Iampi\Source\Repos\MSMPI_playground\x64\Debug\msMPITest.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

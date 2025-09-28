@@ -1,0 +1,7 @@
+Package: msmpi
+Version: 10.1.12498
+Port-Version: 5
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 0fe186af310ce3d65aa707c7d711918008c2fbd3099e8b394366d0f7af13c39e
+Description: Microsoft MPI (MS-MPI) is a Microsoft implementation of the Message Passing Interface standard for developing and running parallel applications on the Windows platform.
