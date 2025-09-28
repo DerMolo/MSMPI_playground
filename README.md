@@ -1,6 +1,6 @@
 # MSMPI_playground
 Description:  
-single cpp file containing all my MSMPI tests
+solution containing all of my MSMPI tests
 
 Build notes:
 *Meant to be run on visual studios with vcpkg. (clone the entire repo within a new visual studio project) 
