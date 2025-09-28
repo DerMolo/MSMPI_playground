@@ -13,6 +13,11 @@ Install MSMPI seperately and include the following environment variables:
 - MSMPI_LIB64: C:\Program Files (x86)\Microsoft SDKs\MPI\Lib\x64
 - MSMPI_BENCHMARKS: C:\Program Files\Microsoft MPI\Benchmarks\
 
+Install vcpkg seperately from visual studios [URL to vcpkg installer](https://vcpkg.io/en/).
+Add or edit the following environment variables: 
+- $path: C:\vcpkg
+- VCPKG_ROOT: C:\vcpkg 
+
 Debugging the solution via mpiexec.exe: 
 Go to: Project -> Project properties -> Debugging  
 Command: C:\Program Files\Microsoft MPI\Bin\mpiexec.exe  
