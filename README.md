@@ -22,7 +22,7 @@ Command: C:\Program Files\Microsoft MPI\Bin\mpiexec.exe
 Command arguments: -n 3 "$(TargetPath)"  
 *edit the number of cores used via command argument.    
 
-Type the following visual studio's developer console:  
+Type the following in the developer console:  
 - vcpkg install msmpi
 - vcpkg integrate install
 
