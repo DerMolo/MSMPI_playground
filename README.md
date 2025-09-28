@@ -4,9 +4,8 @@ solution containing all of my MSMPI tests
 
 Build notes:
 *Meant to be run on visual studios with vcpkg. (clone the entire repo as a new project) 
-- installer for [MSMPI](https://www.microsoft.com/en-us/download/details.aspx?id=105289)
 
-Install MSMPI seperately and include the following environment variables: 
+Install MSMPI seperately and include the following environment variables: [Installer for MSMPI](https://www.microsoft.com/en-us/download/details.aspx?id=105289)  
   
 - MSMPI_BIN: C:\Program Files\Microsoft MPI\Bin\
 - MSMPI_INC: C:\Program Files (x86)\Microsoft SDKs\MPI\Include
