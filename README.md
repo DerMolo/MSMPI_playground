@@ -22,7 +22,7 @@ Type the following visual studio's developer console:
 - vcpkg integrate install
 - vcpkg install
 
-Building with CMAKE:
+Building with CMAKE:  
 In visual studios, open the CMakeLists.txt file.  
 Visual studios will automatically build the project once in here.  
 Afterwards, simply open msMPITest.cpp.  
