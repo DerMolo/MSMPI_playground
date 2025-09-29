@@ -1,11 +1,17 @@
-﻿  The vcpkg manifest was disabled, but we found a manifest file in C:\Users\Iampi\source\repos\MSMPI_playground\. You may want to enable vcpkg manifests in your properties page or pass /p:VcpkgEnableManifest=true to the msbuild invocation.
+﻿  The vcpkg manifest was disabled, but we found a manifest file in C:\Users\CARME\source\repos\msMPITest\. You may want to enable vcpkg manifests in your properties page or pass /p:VcpkgEnableManifest=true to the msbuild invocation.
   msMPITest.cpp
-C:\Users\Iampi\source\repos\MSMPI_playground\msMPITest.cpp(137,37): warning C4804: '<=': unsafe use of type 'bool' in operation
-C:\Users\Iampi\source\repos\MSMPI_playground\msMPITest.cpp(210,17): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-C:\Users\Iampi\source\repos\MSMPI_playground\msMPITest.cpp(227,20): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-C:\Users\Iampi\source\repos\MSMPI_playground\msMPITest.cpp(231,58): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Iampi\source\repos\MSMPI_playground\msMPITest.cpp(249,57): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Iampi\source\repos\MSMPI_playground\msMPITest.cpp(140,1): warning C4715: 'subIntIndex': not all control paths return a value
-  msMPITest.vcxproj -> C:\Users\Iampi\Source\Repos\MSMPI_playground\x64\Debug\msMPITest.exe
+C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(240,36): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
+C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(240,36): warning C4244:         with
+C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(240,36): warning C4244:         [
+C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(240,36): warning C4244:             _Ty=int
+C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(240,36): warning C4244:         ]
+C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(245,41): warning C4244: 'argument': conversion from 'float' to 'const unsigned __int64', possible loss of data
+C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(258,66): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(266,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(276,33): warning C4244: 'argument': conversion from 'float' to 'const unsigned __int64', possible loss of data
+C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(277,36): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(280,59): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(140,1): warning C4715: 'subIntIndex': not all control paths return a value
+  msMPITest.vcxproj -> C:\Users\CARME\source\repos\msMPITest\x64\Debug\msMPITest.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

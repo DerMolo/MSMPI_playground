@@ -10,7 +10,7 @@ using namespace std;
 const int MAX_STRING = 100;
 const double PI = 3.14159265358979323846;
 
-vector<int> globalBinFreqs = {};
+vector<int> globalBinFreqs(5); 
 
 float randomFloat()
 {
@@ -134,23 +134,24 @@ void ignore() {
 
 int subIntIndex(float val, vector<float> &subInts) {
     for (int i = 0; i < subInts.size(); i++) {
-        if (subInts[0] - subInts[i] <= val <= subInts[i])
+        if (subInts[0] - subInts[i] < val && val < subInts[i])
             return i;
     }
 }
 
-void parallelBins(int rank, int size, vector<float> dataSet, vector<float>& subInts, int range, int startInd) {
+void parallelBins(int rank, int size, vector<float> dataSet, vector<float>& subInts, int range) {
+    cout << "Accessed Parallel Bins Func from process " << rank << endl;
     vector<int> binFreqs(subInts.size());
-    for (int i = startInd; i < startInd+range;i++) {
-        cout << "Process: "<<rank << "  dataSet[i] " << dataSet[i] << endl;
-        binFreqs[subIntIndex(dataSet[i], subInts)] += 1;
+    for (int i = 0; i < range;i++) {
+       // cout << "Process: "<<rank << "  dataSet[i] " << dataSet[i] << endl;
+        binFreqs[subIntIndex(dataSet[i], subInts)]++;
     }
-    cout << "Process " << rank<<"  ";
+    cout << "BIN FREQS FOR Process " << rank<<"  ";
     for (auto temp : binFreqs) {
         cout << temp << ", ";
     }
     cout << endl;
-    MPI_Reduce(&binFreqs, &globalBinFreqs, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(binFreqs.data(), globalBinFreqs.data(), 5, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 }
 
 int main(void) {
@@ -207,46 +208,76 @@ int main(void) {
     for (int i = 1; i <= bins; i++) {
         subInts.push_back(i*(1/(float)bins));
     } //creating a vector of subIntervals 
-    float range = sampleSize / cores; 
 
+    float range = (float)sampleSize / cores; 
+    
+    if (my_rank == 0) {
+        cout << "PRINTING SUBINTS: " << endl;
+            for (auto temp : subInts) {
+                cout << ", " << temp;
+            }
+        cout << endl;
+    }
     vector<float> randArr(sampleSize);
-    //first process populates randArr 
+
 
     if (my_rank == 0) {
-        range = floor(range); //ensures equal ranges between all processes 
+        vector<float> coreSubVect = {};
+        //ensures equal ranges between all processes 
         //ex: 
         // 9,999/4 = 2,499.75
-        // 2,499 + 2,500*3 = 9,999 (no floating point indices) 
+        // 2,499 + 2,500*3 = 9,999
 
         for (int i = 0; i < sampleSize; i++) {
             float x = randomFloat();
             randArr[i] = x;
         }
-        cout << "finished randArr" << endl;
-        
-        int buffer = range;
+        //first process should populate randArr to minimize space 
 
-        MPI_Bcast(randArr.data(), sampleSize, MPI_FLOAT, my_rank, MPI_COMM_WORLD); //Process 0 broadcasts randArr to others
-        MPI_Send(&range, 1, MPI_INT, 1, 0, MPI_COMM_WORLD);
-        parallelBins(my_rank, comm_sz, randArr, subInts, range,buffer);
-        // for mapping the subIntervals to their respective frequencies (debug purposes) 
-        cout << "Combined bin frequencies: " << endl;
+        vector<int> endIndices(comm_sz);
+
+        for (int i = 0; i < comm_sz; i++) {
+            endIndices[i] = i == 0 ? floor(range) : endIndices[i-1] + ceil(range);
+            cout << "endIndices[process] " << i<<" "<<endIndices[i] << endl;
+        }
+
+        int startInd = 0;
+        vector<float> subVectBuffer(ceil(range));
+
+        for (int i = 0; i < comm_sz; i++) {
+            for (int x = 0; endIndices[i] == 0 ? x < floor(range) : x < ceil(range); x++) {
+                if (i == 0)
+                    coreSubVect.push_back(randArr[startInd]); //sub vector for core process 
+                else {
+                    subVectBuffer[x] = randArr[startInd]; //sub vector for other processes
+                    //cout << "subVectBuffer[" << x << "]: " << subVectBuffer[x] << "  " << endl;
+                }
+                startInd++;
+            }
+            if (!(i == 0))
+                MPI_Send(subVectBuffer.data(), subVectBuffer.size(), MPI_FLOAT, i, 0, MPI_COMM_WORLD);
+            //NOTE TO SELF: REMEMBER THAT VECTORS MUST BE PASSED AS vect.data() for MPI FUNCTIONS 
+            //ADDITIONALLY, THE RECEIVING VECTOR MUST BE INTIALIZED WITH ENOUGH SPACE
+            startInd = endIndices[i];
+        }
+
+        range = floor(range);
+      
+        parallelBins(my_rank, comm_sz, coreSubVect, subInts, range);
+        // for mapping the subIntervals to their respective frequencies (necessary for comparisons within sub-intervals)
+        cout << "\033[32m" <<"Combined bin frequencies among all processes: " << endl;
         for (auto temp : globalBinFreqs) {
             cout << temp << ", ";
         }
-        cout << endl;
+        cout << "\033[0m" << endl;
     }
     else {
         range = ceil(range);
-        int recBuffer;
-        MPI_Recv(&recBuffer, 1, MPI_INT, my_rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        if (!(my_rank == comm_sz - 1))
-            MPI_Send(&range, 1, MPI_INT, my_rank + 1, 0, MPI_COMM_WORLD);
-        MPI_Bcast(randArr.data(), sampleSize, MPI_FLOAT, 0, MPI_COMM_WORLD);
-       
-        cout << "Process " << my_rank << "startInd: " << recBuffer << endl;
-        //cout << "received randArr from process " << my_rank << endl;
-        parallelBins(my_rank, comm_sz, randArr, subInts,range,recBuffer);
+        vector<float> recBuffer(range); //pre-initialize buffer with enough space for MPI_Recv
+        MPI_Recv(recBuffer.data(), range, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        cout << "Successfully received subVect " << my_rank << endl;
+
+        parallelBins(my_rank, comm_sz, recBuffer, subInts,range);
     }
     MPI_Finalize();
     return 0;
