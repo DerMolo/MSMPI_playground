@@ -3,6 +3,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommand>C:\Program Files\Microsoft MPI\Bin\mpiexec.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-n 3 "$(TargetPath)"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-n 4 "$(TargetPath)"</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>
