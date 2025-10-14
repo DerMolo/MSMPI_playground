@@ -21,6 +21,7 @@ float randomFloat()
 double f(double x) {
     return sin(x);
 }
+
 /*
 void oddEvenComms(int rank, int size) {
     vector<int> sentRank;
@@ -132,6 +133,7 @@ void ignore() {
     }
 }*/
 
+/*
 int subIntIndex(float val, vector<float> &subInts) {
     for (int i = 0; i < subInts.size(); i++) {
         if (subInts[0] - subInts[i] < val && val < subInts[i])
@@ -154,20 +156,68 @@ void parallelBins(int rank, int size, vector<float> dataSet, vector<float>& subI
     MPI_Reduce(binFreqs.data(), globalBinFreqs.data(), 5, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 }
 
+
+*/
+
+
+double operator*(vector<double> &A, vector<double>&B) { //dotproduct
+    //practicing operator overloading 
+    double product = 0; 
+    if (A.size() != B.size()) {
+        cerr << "unexpected size passed to dotProduct operator" << endl;
+        return;
+    }
+    for (int i = 0; i < A.size(); i++) {
+        product += A[i] * B[i];
+    }
+    return product; 
+}
+
+double operator*(double k, vector<double> &C) { //"scalarProduct" 
+    double product = 0;
+    for (int i = 0; i < C.size(); i++) {
+        product += k * C[i];
+    }
+    /*
+    how to use:
+    int k = 5;
+    vector<double> arr = {0,1,2};
+    double scalPro = k*arr = (**underlying operation** 0 + 5 + 2) = 7
+    */
+    return product;
+}
+
+template <typename T>
+ostream& operator<<(ostream& os, const vector<T>& arr) { //cout operator to automatically printout vectors 
+    /*
+    Syntax notes:
+    ostream = An "output stream", used for printing text via the terminal
+    since we're passing in an alias of the ostream, copy-reference is avoided and outputted to the actual ostream
+
+    const vector<T> &arr simply references the actual vector (wtihout making changes)
+    template <typename T> is a cpp feature that allows functions to operate with many types as opposed to accomodating via function overloading
+    */
+    for (auto temp : arr) {
+        os << temp << ", ";
+    }
+    os << "\n";
+    return os;
+}
+
 int main(void) {
     srand(static_cast<unsigned int>(time(0)));
     /**/
-    int        comm_sz;               /* Number of processes    */
-    int        my_rank;               /* My process rank        */
+    int        commSize;               /* Number of processes    */
+    int        rank;               /* My process rank        */
 
    // /* Start up MPI */ //
     MPI_Init(NULL, NULL);
 
     ///* Get the number of processes */ //
-    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+    MPI_Comm_size(MPI_COMM_WORLD, &commSize);
 
    // /* Get my rank among all the processes */
-    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     
     /*
     * COMMENTING OUT TRAPEZOIDAL RULE TEST
@@ -199,8 +249,8 @@ int main(void) {
     * COMMENTING OUT AMONGMANYRANDS PROBLEM 
     maxAmongRands(my_rank, comm_sz);*/
 
-
-    int cores = 4;
+    /*
+     int cores = 4;
     int sampleSize = 10000;
     int bins = 5;
 
@@ -279,6 +329,94 @@ int main(void) {
 
         parallelBins(my_rank, comm_sz, recBuffer, subInts,range);
     }
+    
+    */
+   
+    int cores = 3; 
+    int order = 0;
+    double scalar = 0;
+    cout << "Enter vectors' 'order': " << endl;
+    cin >> order;
+    cout << "Enter scalar: " << endl;
+    cin >> scalar; 
+    
+
+    double baseR = (double)order / cores;
+    double remainder = (baseR - order / cores) * 10;
+
+    int range0 = remainder >= 5 ? floor(baseR) : ceil(baseR); 
+    int range1 = remainder >= 5 ? ceil(baseR) : floor(baseR);
+    //ensuring balanced subVector distribution 
+/*
+   example:
+   10(order)/3(cores) = 3.333                         5(order)/3(cores) = 1.666
+   process0 subVect_Size = ceil() = 4                 process0 subVect_Size = floor() = 1
+   process1 subVect_Size = floor() = 3                process1 subVect_Size = ceil() = 2
+   process2 subVect_Size = floor() = 3                process2 subVect_Size = ceil() = 2
+*/
+
+
+    vector <double> A(order), B(order);
+    vector<double>tempVect;
+    
+    double dotProSum = 0;
+    double scalProSum = 0;
+
+    double tempSend; 
+
+    if (rank == 0) {
+
+        for (int i = 0; i < order; i++) {
+            A[i] = randomFloat();
+            B[i] = randomFloat();
+        }
+
+        vector<double> baseA(A.begin(), A.begin()+range0);
+        vector<double> baseB(B.begin(), B.begin() + range0);
+
+        dotProSum += baseA * baseB;
+        scalProSum += scalar * dotProSum;
+
+        int i = range1-1;
+        while (i<order) {//distributing subVectors 
+            tempVect.assign(A.begin() + i, (A.begin() + i) + range1); //temporarily assigns subRange of a A & B **combined**
+            tempVect.insert(A.end(), B.begin() + i, (B.begin()+i) + range1);
+
+            //ex: A = {1,2,3,4,5} B = {9,5,6,7,8}
+            // 5(order)/3(cores) = 1.66
+            // range0 = 1
+            // range1 = 2
+            // i = range1-1 = 1
+            // A.begin() + i = 1 
+            // A.begin() + i + range1 = 3
+            //tempVect.assign(A.begin() + i, (A.begin() + i) + range1); {2,3}
+            //tempVect.insert(tempVect.end(), B.begin() + i, (B.begin() + i) + range1); {2,3,5,6}
+            /*        
+            *          vector<double> tempA(range1), tempB(range1);
+            *         tempA.assign(tempVect.begin(), tempVect.begin() + range1);
+            *         tempB.assign(tempVect.begin()+range1, (tempVect.begin()+range1) + range1);
+            * 
+            tempVect:            TempA:            TempB:
+            2, 3, 5, 6,          2, 3,             5, 6
+            */
+            MPI_Send(tempVect.data(), range1, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+            i += range1; 
+        }
+            MPI_Reduce(&tempSend,&dotProSum,1, MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD); //dotProductResult
+            MPI_Reduce(&tempSend,&scalProSum,1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD); //scalarProductResult
+            cout << "dotProSum result: " << dotProSum << endl;
+            cout << "scalProSum result: " << scalProSum << endl;
+    }
+    else{ //other process
+        vector<double> tempA(range1), tempB(range1);
+        MPI_Recv(tempVect.data(), range1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); //other processes receive subVectors
+
+        tempA.assign(tempVect.begin(), tempVect.begin() + range1);
+        tempB.assign(tempVect.begin()+range1, (tempVect.begin()+range1) + range1);
+        
+    }
+    
+
     MPI_Finalize();
     return 0;
 }  
