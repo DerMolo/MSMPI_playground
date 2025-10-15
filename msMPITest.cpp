@@ -18,6 +18,12 @@ float randomFloat()
     return (float)rand() / (float)RAND_MAX;
 }
 
+double randomDouble()
+{
+    //taken from geeksforgeeks.org
+    return (double)rand() / (double)RAND_MAX;
+}
+
 double f(double x) {
     return sin(x);
 }
@@ -182,17 +188,17 @@ double operator*(double k, vector<double> &C) { //"scalarProduct"
     how to use:
     int k = 5;
     vector<double> arr = {0,1,2};
-    double scalPro = k*arr = (**underlying operation** 0 + 5 + 2) = 7
+    double scalPro = k*arr = (underlying operation 0 + 5 + 2) = 7
     */
     return product;
 }
 
 template <typename T>
-ostream& operator<<(ostream& os, const vector<T>& arr) { //cout operator to automatically printout vectors 
+ostream& operator<<(ostream& os, const vector<T>& arr) { //output stream insertion operator for printing vectors 
     /*
     * 
-    * >> = insertion into stream 
-    * << = extraction from stream 
+    * << = insertion into stream
+    * >> = extraction from stream 
     * this operator inserts elements into the stream buffer and gets extracted via cout? 
     * 
     Syntax notes:
@@ -200,7 +206,13 @@ ostream& operator<<(ostream& os, const vector<T>& arr) { //cout operator to auto
     since we're passing in an alias of the ostream, copy-reference is avoided and outputted to the actual ostream
 
     const vector<T> &arr simply references the actual vector (wtihout making changes)
-    template <typename T> is a cpp feature that allows functions to operate with many types as opposed to accomodating via function overloading
+    template <typename T> a cpp feature that enables generic typing, which eliminates the overhead of function overloading
+    e.g. 
+    int add(int x, int y) return x + y;
+    double add(double x, double y) return x + y;
+
+    template<typename T> 
+    T add(T x, T y) return x + y; 
 
     example: 
         vector <double> A(order), B(order);
@@ -343,25 +355,19 @@ int main(void) {
     
     */
    
-    int cores = 3; 
     int order = 0;
     double scalar = 0;
-    /*
-        cout << "Enter vectors' 'order': " << endl;
-    cin >> order;
-    */
-
-    order = 5;
-
-    /*
+    if (rank == 0) {
+        cout << "Enter 'order': " << endl;
+        cin >> order;
         cout << "Enter scalar: " << endl;
-    cin >> scalar; 
-    */
-    scalar = 1;
-    
+        cin >> scalar;
+    }
+    MPI_Bcast(&order, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&scalar, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-    double baseR = (double)order / cores;
-    double remainder = (baseR - order / cores) * 10;
+    double baseR = (double)order / commSize;
+    double remainder = (baseR - order / commSize) * 10;
 
     int range0 = remainder >= 5 ? floor(baseR) : ceil(baseR); 
     int range1 = remainder >= 5 ? ceil(baseR) : floor(baseR);
@@ -373,37 +379,36 @@ int main(void) {
    process1 subVect_Size = floor() = 3                process1 subVect_Size = ceil() = 2
    process2 subVect_Size = floor() = 3                process2 subVect_Size = ceil() = 2
 */
-    //variables are defined prior to this 
     vector <double> A(order), B(order);
-    vector<double>tempVect;
 
-    A = { 1,2,3,4,5 };  B = { 9,5,6,7,8 };
+    vector<double>tempVect;
+    double tempSend = 0;
+
     double dotProSum = 0;
     double scalProSum = 0;
 
-    double tempSend; 
-
     tempVect.resize(range1 * 2); //tempVect contiguously stores two vectors
     if (rank == 0) {
-        cout << A;
-        cout << B;
-        /*
-                for (int i = 0; i < order; i++) {
-            A[i] = randomFloat();
-            B[i] = randomFloat();
+                for (int i = 0; i < order; i++) { //populating A & B with random values 
+            A[i] = randomDouble();
+            B[i] = randomDouble();
         }
-        */
+        cout << "\033[34m Proc0 A: \033[0m" << A;
+        cout << "\033[34m Proc0 B: \033[0m" << B <<endl;
+
         vector<double> baseA(A.begin(), A.begin()+range0);
         vector<double> baseB(B.begin(), B.begin() + range0);
 
-        dotProSum += baseA * baseB;
-        scalProSum += scalar * dotProSum;
+        cout << " Proc 0: dotProsum: " << baseA * baseB << endl;
+        cout << " Proc 0: scalProsum: " << (baseA * baseB) * scalar << endl;
 
+        int proc = 1;
         for (int i = range1 - 1; i < order; i+=range1) {//distributing 
-            cout << "i: " << i << " i+range1: " << i + range1 << endl;
+            //cout << "i: " << i << " i+range1: " << i + range1 << endl;
             tempVect.assign(A.begin() + i, (A.begin() + i) + range1); //temporarily assigns subRange of a A & B **combined**
             tempVect.insert(tempVect.end(), B.begin() + i, (B.begin() + i) + range1);
-            //cout << "tempVect from proc0 loop: \n" << tempVect << endl;
+            cout << "tempVect from proc0 loop: \n" << tempVect << endl;
+
             //ex: A = {1,2,3,4,5} B = {9,5,6,7,8}
             // 5(order)/3(cores) = 1.66
             // range0 = 1
@@ -421,28 +426,39 @@ int main(void) {
             tempVect:            TempA:            TempB:
             2, 3, 5, 6,          2, 3,             5, 6
             */
-            MPI_Send(tempVect.data(), range1, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+            MPI_Send(tempVect.data(), range1*2, MPI_DOUBLE, proc, 0, MPI_COMM_WORLD);
+            proc++;
         }
-            MPI_Reduce(&tempSend,&dotProSum,1, MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD); //dotProductResult
-            MPI_Reduce(&tempSend,&scalProSum,1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD); //scalarProductResult (vectorA * vectorB) * k 
-            cout << "dotProSum result: " << dotProSum << endl;
-            cout << "scalProSum result: " << scalProSum << endl;
+        //delete &proc; //testing out memory management 
+        tempSend = baseA * baseB;
+        MPI_Reduce(&tempSend,&dotProSum,1, MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD); //dotProductResult
+
+        tempSend = (baseA * baseB)*scalar;
+        MPI_Reduce(&tempSend,&scalProSum,1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD); //scalarProductResult (vectorA * vectorB) * k 
+
+        cout << "\033[32m TOTAL dotProSum result: \033[0m" << dotProSum << endl;
+        cout << "\033[32m TOTAL scalProSum result: \033[0m" << scalProSum << endl;
     }
     else{ //other processes
-        cout << "accessed otherProcess MPI block" << endl;
         vector<double> tempA(range1), tempB(range1);
         MPI_Recv(tempVect.data(), range1*2, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); //other processes receive subVectors
-        cout << "tempVect from recV: \n" << tempVect;
+
+        cout << "Process: " << rank << " tempVect from recV: \n" << tempVect;
+
         tempA.assign(tempVect.begin(), tempVect.begin() + range1);
         tempB.assign(tempVect.begin()+range1, (tempVect.begin()+range1) + range1);
-        
+
+        cout << "Process: " << rank << " tempA: " << tempA;
+        cout << "Process: " << rank << " tempB: " << tempB << endl;
+
         tempSend = tempA * tempB;
+        cout << "Process: " << rank << " (A*B) tempSend: " << tempSend << endl;
         MPI_Reduce(&tempSend, &dotProSum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         tempSend *= scalar;
+        cout << "Process: " << rank << " (A*B)*k tempSend: " << tempSend << endl;
         MPI_Reduce(&tempSend, &scalProSum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     }
     
-
     MPI_Finalize();
     return 0;
 }  
