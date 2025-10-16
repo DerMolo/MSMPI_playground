@@ -363,7 +363,7 @@ int main(void) {
         cout << "Enter scalar: " << endl;
         cin >> scalar;
     }
-    MPI_Bcast(&order, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&order, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&scalar, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     double baseR = (double)order / commSize;
@@ -393,6 +393,7 @@ int main(void) {
             A[i] = randomDouble();
             B[i] = randomDouble();
         }
+        cout << "range1: " << range1 << " range0: " << range0 << endl;
         cout << "\033[34m Proc0 A: \033[0m" << A;
         cout << "\033[34m Proc0 B: \033[0m" << B <<endl;
 
@@ -403,8 +404,8 @@ int main(void) {
         cout << " Proc 0: scalProsum: " << (baseA * baseB) * scalar << endl;
 
         int proc = 1;
-        for (int i = range1 - 1; i < order; i+=range1) {//distributing 
-            //cout << "i: " << i << " i+range1: " << i + range1 << endl;
+        for (int i = range0; i < order; i+=range1) {//distributing 
+            cout <<"begin() + i: "<< i << " (next index) i+range1: " << i + range1 << endl;
             tempVect.assign(A.begin() + i, (A.begin() + i) + range1); //temporarily assigns subRange of a A & B **combined**
             tempVect.insert(tempVect.end(), B.begin() + i, (B.begin() + i) + range1);
             cout << "tempVect from proc0 loop: \n" << tempVect << endl;
@@ -457,6 +458,7 @@ int main(void) {
         tempSend *= scalar;
         cout << "Process: " << rank << " (A*B)*k tempSend: " << tempSend << endl;
         MPI_Reduce(&tempSend, &scalProSum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        cout << "process: "<<rank << "  Successfully reduced. " << endl;
     }
     
     MPI_Finalize();
