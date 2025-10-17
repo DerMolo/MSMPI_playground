@@ -165,10 +165,10 @@ void parallelBins(int rank, int size, vector<float> dataSet, vector<float>& subI
 
 */
 
-
+/*
 double operator*(vector<double> &A, vector<double>&B) { //dotproduct
-    //practicing operator overloading 
-    double product = 0; 
+    //practicing operator overloading
+    double product = 0;
     if (A.size() != B.size()) {
         cerr << "unexpected size passed to dotProduct operator" << endl;
         return 0.0;
@@ -176,56 +176,74 @@ double operator*(vector<double> &A, vector<double>&B) { //dotproduct
     for (int i = 0; i < A.size(); i++) {
         product += A[i] * B[i];
     }
-    return product; 
+    return product;
 }
-
-double operator*(double k, vector<double> &C) { //"scalarProduct" 
+double operator*(double k, vector<double> &C) { //"scalarProduct"
     double product = 0;
     for (int i = 0; i < C.size(); i++) {
         product += k * C[i];
     }
-    /*
-    how to use:
-    int k = 5;
-    vector<double> arr = {0,1,2};
-    double scalPro = k*arr = (underlying operation 0 + 5 + 2) = 7
-    */
+
+    //how to use:
+    //int k = 5;
+    //vector<double> arr = {0,1,2};
+    //double scalPro = k*arr = (underlying operation 0 + 5 + 2) = 7
+
     return product;
 }
 
 template <typename T>
-ostream& operator<<(ostream& os, const vector<T>& arr) { //output stream insertion operator for printing vectors 
-    /*
-    * 
-    * << = insertion into stream
-    * >> = extraction from stream 
-    * this operator inserts elements into the stream buffer and gets extracted via cout? 
-    * 
-    Syntax notes:
-    ostream = An "output stream", used for printing text via the terminal
-    since we're passing in an alias of the ostream, copy-reference is avoided and outputted to the actual ostream
+ostream& operator<<(ostream& os, const vector<T>& arr) { //output stream insertion operator for printing vectors
 
-    const vector<T> &arr simply references the actual vector (wtihout making changes)
-    template <typename T> a cpp feature that enables generic typing, which eliminates the overhead of function overloading
-    e.g. 
-    int add(int x, int y) return x + y;
-    double add(double x, double y) return x + y;
+    //*
+    //* << = insertion into stream
+    //* >> = extraction from stream
+    //* this operator inserts elements into the stream buffer and gets extracted via cout?
+    //*
+    //Syntax notes:
+    //ostream = An "output stream", used for printing text via the terminal
+    //since we're passing in an alias of the ostream, copy-reference is avoided and outputted to the actual ostream
 
-    template<typename T> 
-    T add(T x, T y) return x + y; 
+    //const vector<T> &arr simply references the actual vector (wtihout making changes)
+    //template <typename T> a cpp feature that enables generic typing, which eliminates the overhead of function overloading
+    //e.g.
+    //int add(int x, int y) return x + y;
+    //double add(double x, double y) return x + y;
 
-    example: 
-        vector <double> A(order), B(order);
-        A = { 1,2,3,4,5 };  B = { 9,5,6,7,8 };
-        cout >> A; //extracting from cout stream
-        cout >> B;
-    */
+    //template<typename T>
+    //T add(T x, T y) return x + y;
+
+    //example:
+    //    vector <double> A(order), B(order);
+    //    A = { 1,2,3,4,5 };  B = { 9,5,6,7,8 };
+    //    cout >> A; //extracting from cout stream
+    //    cout >> B;
     for (auto temp : arr) {
         os << temp << ", ";
     }
     os << "\n";
     return os;
 }
+
+*/
+
+int calcSubRange(int rank,int arraySize){
+    double baseR = (double)arraySize / rank;
+    double remainder = (baseR - arraySize / rank) * 10;
+    if (remainder >= 5)
+        return rank == 0 ? floor(baseR) : ceil(baseR);
+    else
+        return rank == 0 ? ceil(baseR) : floor(baseR);
+}
+
+struct mpiStruct {
+    int subArraySize = 0;
+    double subArrayOfPoints[];
+    mpiStruct(const int size, double arr[]) {
+        subArraySize = size;
+        subArrayOfPoints[size] = *arr;
+    }
+};
 
 int main(void) {
     srand(static_cast<unsigned int>(time(0)));
@@ -242,6 +260,7 @@ int main(void) {
    // /* Get my rank among all the processes */
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     
+    //OTHER TESTS
     /*
     * COMMENTING OUT TRAPEZOIDAL RULE TEST
     * 
@@ -355,7 +374,8 @@ int main(void) {
     
     */
    
-    int order = 0;
+    /*
+        int order = 0;
     double scalar = 0;
     if (rank == 0) {
         cout << "Enter 'order': " << endl;
@@ -372,13 +392,13 @@ int main(void) {
     int range0 = remainder >= 5 ? floor(baseR) : ceil(baseR); 
     int range1 = remainder >= 5 ? ceil(baseR) : floor(baseR);
     //ensuring balanced subVector distribution 
-/*
-   example:
-   10(order)/3(cores) = 3.333                         5(order)/3(cores) = 1.666
-   process0 subVect_Size = ceil() = 4                 process0 subVect_Size = floor() = 1
-   process1 subVect_Size = floor() = 3                process1 subVect_Size = ceil() = 2
-   process2 subVect_Size = floor() = 3                process2 subVect_Size = ceil() = 2
-*/
+
+   //example:
+   //10(order)/3(cores) = 3.333                         5(order)/3(cores) = 1.666
+   //process0 subVect_Size = ceil() = 4                 process0 subVect_Size = floor() = 1
+   //process1 subVect_Size = floor() = 3                process1 subVect_Size = ceil() = 2
+   //process2 subVect_Size = floor() = 3                process2 subVect_Size = ceil() = 2
+
     vector <double> A(order), B(order);
 
     vector<double>tempVect;
@@ -419,14 +439,14 @@ int main(void) {
             // A.begin() + i + range1 = 3
             //tempVect.assign(A.begin() + i, (A.begin() + i) + range1); {2,3}
             //tempVect.insert(tempVect.end(), B.begin() + i, (B.begin() + i) + range1); {2,3,5,6}
-            /*        
-            *          vector<double> tempA(range1), tempB(range1);
-            *         tempA.assign(tempVect.begin(), tempVect.begin() + range1);
-            *         tempB.assign(tempVect.begin()+range1, (tempVect.begin()+range1) + range1);
-            * 
-            tempVect:            TempA:            TempB:
-            2, 3, 5, 6,          2, 3,             5, 6
-            */
+                   
+            //*          vector<double> tempA(range1), tempB(range1);
+            //*         tempA.assign(tempVect.begin(), tempVect.begin() + range1);
+            //*         tempB.assign(tempVect.begin()+range1, (tempVect.begin()+range1) + range1);
+            //* 
+            //tempVect:            TempA:            TempB:
+            //2, 3, 5, 6,          2, 3,             5, 6
+            
             MPI_Send(tempVect.data(), range1*2, MPI_DOUBLE, proc, 0, MPI_COMM_WORLD);
             proc++;
         }
@@ -459,6 +479,17 @@ int main(void) {
         cout << "Process: " << rank << " (A*B)*k tempSend: " << tempSend << endl;
         MPI_Reduce(&tempSend, &scalProSum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         cout << "process: "<<rank << "  Successfully reduced. " << endl;
+    }
+    */
+    
+    mpiStruct sendBuff;
+
+    if (rank == 0) {
+
+    
+    }
+    else {
+    
     }
     
     MPI_Finalize();
