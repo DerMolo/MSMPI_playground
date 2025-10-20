@@ -1,7 +1,11 @@
-﻿  The vcpkg manifest was disabled, but we found a manifest file in C:\Users\CARME\source\repos\msMPITest\. You may want to enable vcpkg manifests in your properties page or pass /p:VcpkgEnableManifest=true to the msbuild invocation.
+﻿  The vcpkg manifest was disabled, but we found a manifest file in C:\Users\Iampi\source\repos\MSMPI_playground\. You may want to enable vcpkg manifests in your properties page or pass /p:VcpkgEnableManifest=true to the msbuild invocation.
   msMPITest.cpp
-C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(372,16): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\CARME\source\repos\msMPITest\msMPITest.cpp(373,16): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-  msMPITest.vcxproj -> C:\Users\CARME\source\repos\msMPITest\x64\Debug\msMPITest.exe
+C:\Users\Iampi\source\repos\MSMPI_playground\msMPITest.cpp(256,26): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+C:\Users\Iampi\source\repos\MSMPI_playground\msMPITest.cpp(258,26): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+C:\Users\Iampi\source\repos\MSMPI_playground\msMPITest.cpp(537,20): warning C4244: 'initializing': conversion from '__int64' to 'int', possible loss of data
+C:\Users\Iampi\source\repos\MSMPI_playground\msMPITest.cpp(537,60): warning C4244: '+=': conversion from '__int64' to 'int', possible loss of data
+C:\Users\Iampi\source\repos\MSMPI_playground\msMPITest.cpp(542,44): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+C:\Users\Iampi\source\repos\MSMPI_playground\msMPITest.cpp(559,40): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+  msMPITest.vcxproj -> C:\Users\Iampi\Source\Repos\MSMPI_playground\x64\Debug\msMPITest.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

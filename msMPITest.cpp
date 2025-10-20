@@ -21,7 +21,8 @@ float randomFloat()
 double randomDouble()
 {
     //taken from geeksforgeeks.org
-    return (double)rand() / (double)RAND_MAX;
+    return 1-(double)rand() / (double)RAND_MAX*2;
+    //1000000000
 }
 
 double f(double x) {
@@ -226,24 +227,48 @@ ostream& operator<<(ostream& os, const vector<T>& arr) { //output stream inserti
 }
 
 */
+template <typename T>
+ostream& operator<<(ostream& os, const vector<T>& arr) { //output stream insertion operator for printing vectors
+    for (auto temp : arr) {
+        os << temp << ", ";
+    }
+    os << "\n";
+    return os;
+}
 
-int calcSubRange(int rank,int arraySize){
-    double baseR = (double)arraySize / rank;
-    double remainder = (baseR - arraySize / rank) * 10;
+template <typename T>
+ostream& operator<<(ostream& os, const vector<vector<T>>& arr) { //output stream insertion operator for printing vectors
+    //OSTREAM OPERATOR FOR 2D VECTORS 
+    for (auto temp : arr) {
+        cout << "{ ";
+        for(auto xTemp : temp)
+        os << xTemp << ", ";
+        cout << "} ,\n";
+    }
+    os << "\n";
+    return os;
+}
+
+int calcSubRange(int rank, int commSize,int bulkArraySize){ //allocates appropriate range for given process rank
+    double baseR = (double)bulkArraySize / commSize;
+    double remainder = (baseR - bulkArraySize / commSize) * 10;
     if (remainder >= 5)
         return rank == 0 ? floor(baseR) : ceil(baseR);
     else
         return rank == 0 ? ceil(baseR) : floor(baseR);
 }
 
-struct mpiStruct {
-    int subArraySize = 0;
-    double subArrayOfPoints[];
-    mpiStruct(const int size, double arr[]) {
-        subArraySize = size;
-        subArrayOfPoints[size] = *arr;
+
+long long int pointsInCircle(const vector<double> points, int rank) {
+    int count = 0;
+    for (int i = 0; i < points.size();i++) {
+        int nextIndex = i++;
+        double randX = points[i], randY = points[nextIndex];
+       // cout << "process: " << rank << "   randX: " << randX << "  randY: " << randY << "  withinCircle:" << withinCircle << endl;
+        count += sqrt(randX * randX + randY * randY) <= 1; //if radius <= 1, then add to globalCount
     }
-};
+    return count;
+}
 
 int main(void) {
     srand(static_cast<unsigned int>(time(0)));
@@ -482,14 +507,63 @@ int main(void) {
     }
     */
     
-    mpiStruct sendBuff;
+    vector<double> subRandPoints; //2d vector flattened to a row
+    long long int globalCount = 0, tempSend = 0;
+    long long int range1 = 0;
 
     if (rank == 0) {
+        int randArrSize=0;
+        cout << "enter point count:"<< endl;
+        cin >> randArrSize;
 
-    
+        long long int range0 = calcSubRange(0,commSize, randArrSize);
+            range1 = calcSubRange(1,commSize, randArrSize);
+            cout << "range0: " << range0 << endl;
+            cout << "range1: " << range1 << endl;
+
+        vector<double> randPoints(randArrSize*2);
+        MPI_Bcast(&range1, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+       // cout << "randPoints before loop:\n" << randPoints << endl;
+
+        for (int row = 0; row < randArrSize*2; row++) 
+        randPoints[row] = randomDouble();
+
+        // cout << "randPoints after loop:\n" << randPoints << endl;
+
+        //cout << "\n "<<"proc: "<<rank << " randPoints after loop:\n" << randPoints << endl;
+
+        int proc = 1;
+        for (int i = range0*2; i < randArrSize*2; i+=range1*2) {
+            //cout << "begin() + i    " << i << "   i + range1*2: " << i+range1*2 << endl;
+
+            subRandPoints.assign( randPoints.begin() + i, (randPoints.begin() + i) + range1*2 ); //extracting subVector from randPoints
+            //cout << "subRandPoints for proc " << proc << ": \n" << subRandPoints << endl;
+            MPI_Send(subRandPoints.data(), range1, MPI_DOUBLE, proc, 0, MPI_COMM_WORLD);
+            proc++;
+        }
+        subRandPoints.clear();
+        subRandPoints = { randPoints.begin(), randPoints.begin() + range0*2 };
+        //cout << "subRandPoints for proc " << rank << ": \n" << subRandPoints << endl;
+
+        tempSend = pointsInCircle(subRandPoints, rank);
+        MPI_Reduce(&tempSend, &globalCount, 1, MPI_LONG_LONG_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        cout << "globalCount: " << globalCount << endl;
+        cout << "4*globalCount/arrSize: " << 4*globalCount/ (double)randArrSize << endl;
     }
     else {
-    
+        MPI_Bcast(&range1, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        subRandPoints.resize(range1*2);
+
+        //cout << "Proc: " << rank << "   rangeRecv: "<< range1 << endl;
+        MPI_Recv(subRandPoints.data(), range1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        tempSend = pointsInCircle(subRandPoints, rank);
+        //function desc:
+        // counts the number of points within a circle, as determined by the calculated radius. (sqrt{x^2 + y^2}) 
+        //
+
+        //cout << "proc: " << rank << " tempSend: " << tempSend << endl;
+        MPI_Reduce(&tempSend, &globalCount, 1, MPI_LONG_LONG_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     }
     
     MPI_Finalize();
