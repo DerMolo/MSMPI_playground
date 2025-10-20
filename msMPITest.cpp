@@ -227,6 +227,19 @@ ostream& operator<<(ostream& os, const vector<T>& arr) { //output stream inserti
 }
 
 */
+
+/*
+long long int pointsInCircle(const vector<double> points, int rank) {
+    int count = 0;
+    for (int i = 0; i < points.size();i++) {
+        int nextIndex = i++;
+        double randX = points[i], randY = points[nextIndex];
+       // cout << "process: " << rank << "   randX: " << randX << "  randY: " << randY << "  withinCircle:" << withinCircle << endl;
+        count += sqrt(randX * randX + randY * randY) <= 1; //if radius <= 1, then add to globalCount
+    }
+    return count;
+}
+*/
 template <typename T>
 ostream& operator<<(ostream& os, const vector<T>& arr) { //output stream insertion operator for printing vectors
     for (auto temp : arr) {
@@ -258,16 +271,17 @@ int calcSubRange(int rank, int commSize,int bulkArraySize){ //allocates appropri
         return rank == 0 ? ceil(baseR) : floor(baseR);
 }
 
-
-long long int pointsInCircle(const vector<double> points, int rank) {
-    int count = 0;
-    for (int i = 0; i < points.size();i++) {
-        int nextIndex = i++;
-        double randX = points[i], randY = points[nextIndex];
-       // cout << "process: " << rank << "   randX: " << randX << "  randY: " << randY << "  withinCircle:" << withinCircle << endl;
-        count += sqrt(randX * randX + randY * randY) <= 1; //if radius <= 1, then add to globalCount
-    }
-    return count;
+void calcVariance(const vector<double> &subVector, int range, double &recvBuffer) {
+    double sum = 0;
+    for (auto temp : subVector) //calculating local mean (within sub processes' subVector) 
+        sum += temp;
+    double localBuffer = sum / range;
+    MPI_Reduce(&localBuffer, &recvBuffer, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    //adding localMean to globalMean 
+    double localVariance = 0;
+    for (auto temp : subVector)
+        localVariance += (temp - recvBuffer) * (temp - recvBuffer);
+    MPI_Reduce(&localBuffer, &recvBuffer, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 }
 
 int main(void) {
@@ -507,7 +521,8 @@ int main(void) {
     }
     */
     
-    vector<double> subRandPoints; //2d vector flattened to a row
+    /*
+        vector<double> subRandPoints; //2d vector flattened to a row
     long long int globalCount = 0, tempSend = 0;
     long long int range1 = 0;
 
@@ -552,7 +567,6 @@ int main(void) {
         cout << "4*globalCount/arrSize: " << 4*globalCount/ (double)randArrSize << endl;
     }
     else {
-        MPI_Bcast(&range1, 1, MPI_INT, 0, MPI_COMM_WORLD);
         subRandPoints.resize(range1*2);
 
         //cout << "Proc: " << rank << "   rangeRecv: "<< range1 << endl;
@@ -565,8 +579,65 @@ int main(void) {
         //cout << "proc: " << rank << " tempSend: " << tempSend << endl;
         MPI_Reduce(&tempSend, &globalCount, 1, MPI_LONG_LONG_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     }
-    
-    MPI_Finalize();
-    return 0;
+    */
+int vectSize;
+vector<int> subCount(commSize);
+vector<int> displacements(commSize);
+
+vector<double>subVector;
+double recvMean;
+
+if (rank == 0) {
+    vector<double> bulkVect; 
+    cout << "enter vectorSize: " << endl;
+    cin >> vectSize;
+    bulkVect.resize(vectSize);
+    for (auto i = bulkVect.begin(); i < bulkVect.end(); i++)
+        *i = randomDouble();
+
+    cout << "Proc: " << rank << " bulkVect: " << bulkVect << endl;
+
+    //initializing array of subCounts 
+    int tempDisp = 0;
+    for (int i = 0; i < commSize; i++) {
+        int range = calcSubRange(i, commSize, vectSize);
+        tempDisp += range;
+        subCount[i] = range;
+        displacements[i] = tempDisp;
+    }
+    cout << "\nsubCount: " << subCount;
+    cout << "\nDisplacements: " << displacements << endl;
+    MPI_Bcast(&subCount, commSize,MPI_INT,0,MPI_COMM_WORLD);
+    MPI_Bcast(&displacements, commSize, MPI_INT, 0, MPI_COMM_WORLD);
+
+    //testing out scatterV
+    //used to evenly distribute elements among an uneven number of processes 
+    MPI_Scatterv(bulkVect.data(), subCount.data(), displacements.data(), MPI_DOUBLE, subVector.data(), subCount[rank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    cout << "Proc: " << rank << "   range: " << subCount[rank] << " subVect: " << subVector << endl;
+    calcVariance(subVector, subCount[rank], recvMean);
+    cout << "Variance from proc " << rank << ":  " << recvMean / commSize << endl;
+}
+else {
+    MPI_Bcast(&subCount, commSize, MPI_INT, 0, MPI_COMM_WORLD); //blocking other processes 
+    MPI_Bcast(&displacements, commSize, MPI_INT, 0, MPI_COMM_WORLD); //ensuring subCount & displ is broadcasted
+    subVector.resize(subCount[rank]);
+    MPI_Scatterv(NULL, NULL, NULL, MPI_DOUBLE, subVector.data(), subCount[rank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    cout << "Proc: " << rank << "   range: " << subCount[rank] << " subVect: " << subVector << endl;
+    calcVariance(subVector, subCount[rank], recvMean);
+    /*
+        double sum = 0;
+    for (auto temp : subVector) //calculating local mean (within sub processes' subVector) 
+        sum += temp;
+    double localMean = sum / subCount[rank];
+    MPI_Reduce(&localMean, &recvMean, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    //adding localMean to globalMean 
+    double localVariance = 0;
+    for (auto temp : subVector)
+        localVariance += (temp - recvMean) * (temp - recvMean);
+    */
+}
+
+MPI_Finalize();
+return 0;
 }  
 
