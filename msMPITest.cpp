@@ -631,13 +631,10 @@ if (rank == 0) {
     cout << "Variance from all processes: "<< recvBuffer / vectSize << endl;
 }
 else {
-    //MPI_Barrier(MPI_COMM_WORLD);
-    //cout << "rank: " << rank << endl;
     MPI_Bcast(&vectSize, commSize, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(subCount.data(), commSize, MPI_INT, 0, MPI_COMM_WORLD); //blocking other processes 
-    MPI_Bcast(displacements.data(), commSize, MPI_INT, 0, MPI_COMM_WORLD); //ensuring subCount & displ is broadcasted
-    //cout << "Proc: " << rank << "  subCount received: " << subCount << endl;
-    //cout << "Proc: " << rank << "  displacements received: " << displacements << endl;
+    MPI_Bcast(subCount.data(), commSize, MPI_INT, 0, MPI_COMM_WORLD); //blocking calls to ensure broadcast 
+    MPI_Bcast(displacements.data(), commSize, MPI_INT, 0, MPI_COMM_WORLD); 
+
     subVector.resize(subCount[rank]);
 
     MPI_Scatterv(NULL, NULL, NULL, MPI_DOUBLE, subVector.data(), subCount[rank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
